@@ -250,6 +250,7 @@ set ( noggit_root_sources
     )
 
 set ( noggit_ui_sources
+      src/noggit/ui/server_object_layer.cpp
       src/noggit/ui/About.cpp
       src/noggit/ui/asset_browser.cpp
       src/noggit/ui/chunk_mover.cpp

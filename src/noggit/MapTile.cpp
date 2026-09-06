@@ -672,11 +672,13 @@ void MapTile::save(World* world, bool save_using_mclq_liquids)
     {
       if (model.value().index() == eEntry_WMO)
       {
-        lObjectInstances.emplace_back(*std::get<selected_wmo_type>(model.value()));
+        auto* instance = std::get<selected_wmo_type>(model.value());
+        if (!instance->server_entry) lObjectInstances.emplace_back(*instance);
       }
       else
       {
-        lModelInstances.emplace_back(*std::get<selected_model_type>(model.value()));
+        auto* instance = std::get<selected_model_type>(model.value());
+        if (!instance->server_entry) lModelInstances.emplace_back(*instance);
       }
     }
   }

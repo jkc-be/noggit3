@@ -467,6 +467,24 @@ void MapView::createGUI()
   connect(this, &QObject::destroyed, _bookmark_menu, &QObject::deleteLater);
 
   auto help_menu (_main_window->menuBar()->addMenu ("Help"));
+
+  auto server_menu = _main_window->menuBar()->addMenu("AzerothCore");
+  auto add_server = server_menu->addAction("Add server object at cursor...");
+  add_server->setShortcut(QKeySequence("Ctrl+Shift+G"));
+  connect(add_server, &QAction::triggered, this, [this] {
+    makeCurrent();
+    opengl::context::scoped_setter const context_guard(::gl, context());
+    auto position = _cursor_pos;
+    set_editing_mode(editing_mode::object);
+    _server_layer->add(position);
+  });
+  auto phase_server = server_menu->addAction("Set selected server object phase...");
+  connect(phase_server, &QAction::triggered, this, [this] { _server_layer->phase(); });
+  auto save_server = server_menu->addAction("Save server objects");
+  connect(save_server, &QAction::triggered, this, [this] { _server_layer->save(); });
+  auto export_server = server_menu->addAction("Export server objects to SQL...");
+  connect(export_server, &QAction::triggered, this, [this] { _server_layer->export_sql(); });
+
   connect (this, &QObject::destroyed, help_menu, &QObject::deleteLater);
 
 #define ADD_ACTION(menu, name, shortcut, on_action)               \
@@ -1637,6 +1655,8 @@ void MapView::initializeGL()
 
   _uid_fix = uid_fix_mode::none;
 
+  _server_layer = std::make_unique<noggit::ui::server_object_layer>(_world.get(), this);
+  _server_layer->load();
   createGUI();
 
   set_editing_mode (editing_mode::ground);
@@ -1816,6 +1836,8 @@ MapView::~MapView()
     uid_storage::remove_uid_for_map(_world->getMapID());
   }
 
+  if (_server_layer) _server_layer->save();
+  _server_layer.reset();
   _world.reset();
 
   AsyncLoader::instance->reset_object_fail();
@@ -2050,7 +2072,7 @@ void MapView::tick (float dt)
 
   _status_position->setText (status);
 
-  if (currentSelection.size() > 0)
+  if (currentSelection.size() != 1)
   {
     _status_selection->setText ("");
   }
@@ -2062,8 +2084,8 @@ void MapView::tick (float dt)
       {
       auto instance(std::get<selected_model_type>(*currentSelection.begin()));
         _status_selection->setText
-          ( QString ("%1: %2")
-          . arg (instance->uid)
+          ( QString (instance->server_entry ? "Server object %1: %2" : "Map object %1: %2")
+          . arg (instance->server_entry ? instance->server_entry : instance->uid)
           . arg (QString::fromStdString (instance->model->filename))
           );
         break;
@@ -2072,8 +2094,8 @@ void MapView::tick (float dt)
       {
       auto instance(std::get<selected_wmo_type>(*currentSelection.begin()));
         _status_selection->setText
-          ( QString ("%1: %2")
-          . arg (instance->mUniqueID)
+          ( QString (instance->server_entry ? "Server object %1: %2" : "Map object %1: %2")
+          . arg (instance->server_entry ? instance->server_entry : instance->mUniqueID)
           . arg (QString::fromStdString (instance->wmo->filename))
           );
         break;
@@ -2950,6 +2972,7 @@ void MapView::mouseReleaseEvent (QMouseEvent* event)
 
 void MapView::save(save_mode mode)
 {
+  if (_server_layer && !_server_layer->save()) return;
   bool save = true;
 
   if (AsyncLoader::instance->important_object_failed_loading())

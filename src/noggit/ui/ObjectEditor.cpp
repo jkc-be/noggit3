@@ -26,6 +26,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QtWidgets/QMessageBox>
+#include <QUuid>
 #include <QKeyEvent>
 
 
@@ -459,12 +460,16 @@ namespace noggit
             rotation = std::get<selected_model_type>(selection)->rotation();
           }
 
-          world->addM2( std::get<selected_model_type>(selection)->model->filename
+          auto* placed = world->addM2( std::get<selected_model_type>(selection)->model->filename
                       , pos
                       , scale
                       , rotation
                       , &_paste_params
                       );
+          auto* source = std::get<selected_model_type>(selection);
+          placed->server_entry = source->server_entry;
+          placed->server_phase = source->server_phase;
+          if (placed->server_entry) placed->server_key = QUuid::createUuid().toString(QUuid::WithoutBraces).toStdString();
         }
         else if (selection.index() == eEntry_WMO)
         {
@@ -475,7 +480,11 @@ namespace noggit
             rotation = std::get<selected_wmo_type>(selection)->rotation();
           }
 
-          world->addWMO(std::get<selected_wmo_type>(selection)->wmo->filename, pos, rotation);
+          auto* source = std::get<selected_wmo_type>(selection);
+          auto* placed = world->addWMO(source->wmo->filename, pos, rotation);
+          placed->server_entry = source->server_entry;
+          placed->server_phase = source->server_phase;
+          if (placed->server_entry) placed->server_key = QUuid::createUuid().toString(QUuid::WithoutBraces).toStdString();
         }
       }
     }
@@ -602,6 +611,8 @@ namespace noggit
           auto clone = new ModelInstance(original->model->filename);
 
           clone->set_scale(original->scale());
+          clone->server_entry = original->server_entry;
+          clone->server_phase = original->server_phase;
           clone->set_position(pivot ? original->position() - pivot.value() : math::vector_3d());
           clone->set_rotation(original->rotation());
 
@@ -612,6 +623,8 @@ namespace noggit
         {
           auto original = std::get<selected_wmo_type>(selection);
           auto clone = new WMOInstance(original->wmo->filename);
+          clone->server_entry = original->server_entry;
+          clone->server_phase = original->server_phase;
           clone->set_position(pivot ? original->position() - pivot.value() : math::vector_3d());
           clone->set_rotation(original->rotation());
 

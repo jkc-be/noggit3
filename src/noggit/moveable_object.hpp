@@ -8,6 +8,7 @@
 #include <math/trig.hpp>
 
 #include <optional>
+#include <string>
 
 class World;
 struct ENTRY_MDDF;
@@ -20,6 +21,11 @@ namespace noggit
   class moveable_object
   {
   public:
+    // Editor-only server placement metadata. Never serialized into ADT files.
+    std::string server_key;
+    unsigned int server_entry = 0;
+    unsigned int server_phase = 1;
+
     moveable_object(math::vector_3d const& pos, math::degrees::vec3 const& rotation);
     moveable_object(math::vector_3d const& pos, math::degrees::vec3 const& rotation, float scale);
     moveable_object(ENTRY_MDDF const* m2_entry);

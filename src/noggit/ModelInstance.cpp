@@ -46,7 +46,8 @@ void ModelInstance::after_move(World* world)
 
 bool ModelInstance::is_a_duplicate_of(ModelInstance const& other)
 {
-  return model->filename == other.model->filename
+  return !server_entry && !other.server_entry
+      && model->filename == other.model->filename
       && misc::vec3d_equals(position(), other.position())
       && misc::deg_vec3d_equals(rotation(), other.rotation())
       && misc::float_equals(scale(), other.scale());

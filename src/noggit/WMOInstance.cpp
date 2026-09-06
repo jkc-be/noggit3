@@ -49,7 +49,8 @@ void WMOInstance::after_move(World* world)
 
 bool WMOInstance::is_a_duplicate_of(WMOInstance const& other)
 {
-  return wmo->filename == other.wmo->filename
+  return !server_entry && !other.server_entry
+      && wmo->filename == other.wmo->filename
       && misc::vec3d_equals(position(), other.position())
       && misc::deg_vec3d_equals(rotation(), other.rotation());
 }
