@@ -370,6 +370,7 @@ set ( noggit_root_headers
     )
 
 set ( noggit_ui_headers
+      src/noggit/ui/server_object_layer.hpp
       src/noggit/ui/About.h
       src/noggit/ui/asset_browser.hpp
       src/noggit/ui/chunk_mover.hpp
@@ -596,6 +597,13 @@ TARGET_LINK_LIBRARIES (noggit
   ColorWidgets-qt5
 )
 
+# Export/catalog live next to the binary (QCoreApplication::applicationDirPath()).
+add_custom_command (TARGET noggit POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+          "${CMAKE_SOURCE_DIR}/integration"
+          "$<TARGET_FILE_DIR:noggit>/integration"
+)
+
 set (_noggit_revision_output_dir "${CMAKE_BINARY_DIR}/revision_output")
 set (_noggit_revision_template_file "${CMAKE_SOURCE_DIR}/cmake/revision.h.in")
 set (_noggit_revision_output_file "${_noggit_revision_output_dir}/revision.h")
@@ -650,6 +658,9 @@ endif()
 
 if (NOT APPLE)
   install (TARGETS noggit DESTINATION .)
+  install (DIRECTORY "${CMAKE_SOURCE_DIR}/integration/"
+           DESTINATION integration
+           PATTERN "__pycache__" EXCLUDE)
   if (WIN32)
     install (FILES $<TARGET_PDB_FILE:noggit> DESTINATION . OPTIONAL)
   endif()

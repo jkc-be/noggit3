@@ -1,6 +1,7 @@
 // This file is part of Noggit3, licensed under GNU GPL version 3.
 #pragma once
 #include <QJsonArray>
+#include <QJsonObject>
 #include <QString>
 #include <math/vector_3d.hpp>
 class World;

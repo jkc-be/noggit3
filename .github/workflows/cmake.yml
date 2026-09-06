@@ -23,6 +23,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: "test: python export"
+      run: python3 -m unittest discover -s integration -p 'test_*.py' -v
+      if: ${{ matrix.platform == 'ubuntu-24.04' }}
+
     - name: "release dependency: linuxdeployqt (linux)"
       run: |
         wget "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O "${{ runner.workspace }}/linuxdeployqt"
