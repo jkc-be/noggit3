@@ -1,6 +1,7 @@
 // This file is part of Noggit3, licensed under GNU General Public License (version 3).
 
 #pragma once
+#include <noggit/ui/server_object_layer.hpp>
 
 #include <math/ray.hpp>
 #include <math/vector_4d.hpp>
@@ -84,6 +85,7 @@ public:
   bool  rightMouse = false;
   noggit::camera _camera;
   std::unique_ptr<World> _world;
+  std::unique_ptr<noggit::ui::server_object_layer> _server_layer;
 private:
 
   float _2d_zoom = 1.f;

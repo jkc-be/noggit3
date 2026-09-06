@@ -133,10 +133,10 @@ public:
 
 private:
   std::string filename;
-  size_t recordSize;
-  size_t recordCount;
-  size_t fieldCount;
-  size_t stringSize;
+  size_t recordSize = 0;
+  size_t recordCount = 0;
+  size_t fieldCount = 0;
+  size_t stringSize = 0;
   std::vector<unsigned char> data;
   std::vector<char> stringTable;
 };

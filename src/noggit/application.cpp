@@ -80,6 +80,20 @@ void Noggit::initPath(char *argv[])
   }
 }
 
+namespace
+{
+  std::string archive_case(std::string const& requested)
+  {
+    std::filesystem::path p(requested);
+    if (!std::filesystem::exists(p.parent_path())) return requested;
+    auto name = QString::fromStdString(p.filename().string());
+    for (auto const& item : std::filesystem::directory_iterator(p.parent_path()))
+      if (QString::fromStdString(item.path().filename().string()).compare(name, Qt::CaseInsensitive) == 0)
+        return item.path().string();
+    return requested;
+  }
+}
+
 void Noggit::loadMPQs()
 {
   // load project folder listfile first, todo: make that async
@@ -153,7 +167,7 @@ void Noggit::loadMPQs()
     {
       for (char j = '2'; j <= '9'; j++)
       {
-        std::string file = misc::replace(path, "{number}", std::string(1, j));
+        std::string file = archive_case(misc::replace(path, "{number}", std::string(1, j)));
 
         if (std::filesystem::exists(file))
         {
@@ -165,7 +179,7 @@ void Noggit::loadMPQs()
     {
       for (char c = 'a'; c <= 'z'; c++)
       {
-        std::string file = misc::replace(path, "{character}", std::string(1, c));
+        std::string file = archive_case(misc::replace(path, "{character}", std::string(1, c)));
 
         if (std::filesystem::exists(file))
         {
@@ -173,9 +187,9 @@ void Noggit::loadMPQs()
         }
       }
     }
-    else if (std::filesystem::exists(path))
+    else if (std::filesystem::exists(archive_case(path)))
     {
-      MPQArchive::loadMPQ(AsyncLoader::instance, path, true);
+      MPQArchive::loadMPQ(AsyncLoader::instance, archive_case(path), true);
     }
   }
 }

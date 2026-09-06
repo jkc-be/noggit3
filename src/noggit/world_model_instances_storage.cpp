@@ -28,7 +28,7 @@ namespace noggit
       _world->updateTilesModel(&_m2s.at(uid_after), model_update::add);
     }
 
-    return instance.uid;
+    return uid_after;
   }
   std::uint32_t world_model_instances_storage::unsafe_add_model_instance_no_world_upd(ModelInstance instance)
   {
@@ -74,7 +74,7 @@ namespace noggit
       _world->updateTilesWMO(&_wmos.at(uid_after), model_update::add);
     }
 
-    return instance.mUniqueID;
+    return uid_after;
   }
   std::uint32_t world_model_instances_storage::unsafe_add_wmo_instance_no_world_upd(WMOInstance instance)
   {
@@ -111,6 +111,7 @@ namespace noggit
 
     for (auto it = _m2s.begin(); it != _m2s.end(); ++it)
     {
+      if (it->second.server_entry) continue; // Terrain tools only operate on map scenery.
       math::vector_3d const& inst_position = it->second.position();
       math::vector_3d pos_shifted = inst_position - chunk_origin;
 
@@ -121,6 +122,7 @@ namespace noggit
     }
     for (auto it = _wmos.begin(); it != _wmos.end(); ++it)
     {
+      if (it->second.server_entry) continue; // Terrain tools only operate on map scenery.
       math::vector_3d const& inst_position = it->second.position();
       math::vector_3d pos_shifted = inst_position - chunk_origin;
 
@@ -139,6 +141,7 @@ namespace noggit
 
     for (auto it = _m2s.begin(); it != _m2s.end(); ++it)
     {
+      if (it->second.server_entry) continue; // Terrain tools only operate on map scenery.
       math::vector_3d const& inst_position = it->second.position();
       math::vector_3d pos_shifted = inst_position - chunk_origin;
 
@@ -149,6 +152,7 @@ namespace noggit
     }
     for (auto it = _wmos.begin(); it != _wmos.end(); ++it)
     {
+      if (it->second.server_entry) continue; // Terrain tools only operate on map scenery.
       math::vector_3d const& inst_position = it->second.position();
       math::vector_3d pos_shifted = inst_position - chunk_origin;
 
@@ -171,6 +175,7 @@ namespace noggit
     {
       for (auto it = _m2s.begin(); it != _m2s.end(); ++it)
       {
+        if (it->second.server_entry) continue; // Terrain tools only operate on map scenery.
         float dist = (math::vector_2d(it->second.position().x, it->second.position().z) - orig).length();
 
         // in range for sure
@@ -193,6 +198,7 @@ namespace noggit
     {
       for (auto it = _wmos.begin(); it != _wmos.end(); ++it)
       {
+        if (it->second.server_entry) continue; // Terrain tools only operate on map scenery.
         math::vector_3d const& wmo_pos = it->second.position();
         float dist = (math::vector_2d(wmo_pos.x, wmo_pos.z) - orig).length();
 
@@ -224,6 +230,7 @@ namespace noggit
     {
       for (auto it = _m2s.begin(); it != _m2s.end(); ++it)
       {
+        if (it->second.server_entry) continue; // Terrain tools only operate on map scenery.
         if (tile_index(it->second.position()) == tile)
         {
           instances_to_remove.push_back(&it->second);
@@ -234,6 +241,7 @@ namespace noggit
     {
       for (auto it = _wmos.begin(); it != _wmos.end(); ++it)
       {
+        if (it->second.server_entry) continue; // Terrain tools only operate on map scenery.
         if (tile_index(it->second.position()) == tile)
         {
           instances_to_remove.push_back(&it->second);
@@ -281,6 +289,10 @@ namespace noggit
       LogError << "Trying to unload an instance that wasn't stored" << std::endl;
       return;
     }
+
+    // Server previews belong to the project layer and survive tile unloading.
+    if ((_m2s.count(uid) && _m2s.at(uid).server_entry)
+        || (_wmos.count(uid) && _wmos.at(uid).server_entry)) return;
 
     if (--_instance_count_per_uid.at(uid) == 0)
     {

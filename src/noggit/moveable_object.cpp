@@ -53,7 +53,10 @@ namespace noggit
   }
 
   moveable_object::moveable_object(moveable_object&& other)
-    : _position(other._position)
+    : server_key(std::move(other.server_key))
+    , server_entry(other.server_entry)
+    , server_phase(other.server_phase)
+    , _position(other._position)
     , _rotation(other._rotation)
     , _scale(other._scale)
     , _can_scale(other._can_scale)
@@ -63,6 +66,9 @@ namespace noggit
 
   moveable_object& moveable_object::operator= (moveable_object&& other)
   {
+    std::swap(server_key, other.server_key);
+    std::swap(server_entry, other.server_entry);
+    std::swap(server_phase, other.server_phase);
     std::swap(_position, other._position);
     std::swap(_rotation, other._rotation);
     std::swap(_scale, other._scale);
